@@ -2,18 +2,17 @@ const request = require("request");
 const yargs = require("yargs");
 
 const argv = yargs
-  .options({
+  .option({
     a: {
+      describe: "Address for fetching the weather report",
+      string: true,
       demand: true,
-      alias: "address",
-      describe: "Address to fetch weather",
-      string: true
+      alias: "address"
     }
   })
   .help()
   .alias("help", "h").argv;
 
-console.log(argv);
 var encodedAddress = encodeURIComponent(argv.address);
 
 request(
@@ -22,8 +21,13 @@ request(
     json: true
   },
   (error, response, body) => {
-    console.log(`Address: ${body.results[0].formatted_address}`);
-    console.log(`Latitude: ${body.results[0].geometry.location.lat}`);
-    console.log(`Longitude: ${body.results[0].geometry.location.lng}`);
+    if (error) console.log("unable to connect to server");
+    else if (body.status === "ZERO_RESULTS")
+      console.log("Can not locate the place");
+    else if (body.status === "OK") {
+      console.log(`Location: ${body.results[0].formatted_address}`);
+      console.log(`Lattitude: ${body.results[0].geometry.location.lat}`);
+      console.log(`Longitude: ${body.results[0].geometry.location.lng}`);
+    }
   }
 );
